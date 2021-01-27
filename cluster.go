@@ -790,6 +790,8 @@ func (c *ClusterClient) cmdSlotAndNode(cmd Cmder) (int, *clusterNode, error) {
 	cmdInfo := c.cmdInfo(cmd.Name())
 	slot := c.cmdSlot(cmd)
 
+	fmt.Println(fmt.Sprintf("all,%+v", state.slotNodes(slot)))
+
 	if c.opt.ReadOnly && cmdInfo != nil && cmdInfo.ReadOnly {
 		if c.opt.RouteByLatency {
 			node, err := state.slotClosestNode(slot)
@@ -797,14 +799,17 @@ func (c *ClusterClient) cmdSlotAndNode(cmd Cmder) (int, *clusterNode, error) {
 		}
 
 		if c.opt.RouteRandomly {
+			fmt.Println("random")
 			node := state.slotRandomNode(slot)
 			return slot, node, nil
 		}
 
+		fmt.Println("slave")
 		node, err := state.slotSlaveNode(slot)
 		return slot, node, err
 	}
 
+	fmt.Println("master")
 	node, err := state.slotMasterNode(slot)
 	return slot, node, err
 }
@@ -916,6 +921,7 @@ func (c *ClusterClient) defaultProcess(cmd Cmder) error {
 		if node == nil {
 			var err error
 			_, node, err = c.cmdSlotAndNode(cmd)
+			fmt.Println(fmt.Sprintf("node,%+v", node))
 			if err != nil {
 				cmd.setErr(err)
 				break
